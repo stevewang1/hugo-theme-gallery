@@ -41,7 +41,7 @@ jobs:
           extended: true
 
       - name: 构建
-        run: hugo --minify
+        run: hugo --minify --baseURL="https://xsfl.edu.kg/"
 
       - name: 上传构建结果
         uses: actions/upload-pages-artifact@v3

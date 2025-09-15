@@ -1,4 +1,4 @@
-baseURL = 'https://stevewang1.github.io/hugo-theme-gallery/'
+baseURL = 'https://xsfl.edu.kg/'
 languageCode = 'zh-cn'
 title = '我的相册网站'
 theme = 'gallery'
