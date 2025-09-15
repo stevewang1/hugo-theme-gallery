@@ -41,3 +41,18 @@ content/
 ## 部署
 
 本网站使用 GitHub Actions 自动部署到 GitHub Pages。每次推送到 `main` 分支时，都会触发构建和部署流程。
+
+# 创建或更新README.md
+## 部署说明
+
+本项目现在部署在Cloudflare Pages上。
+
+### 部署流程
+1. 推送代码到GitHub仓库
+2. Cloudflare Pages自动构建和部署
+3. 网站自动更新到 https://xsfl.edu.kg
+
+### 构建配置
+- 框架：Hugo
+- 构建命令：hugo --minify
+- 输出目录：public
