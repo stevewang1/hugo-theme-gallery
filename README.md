@@ -38,11 +38,6 @@ content/
     └── index.md
 ```
 
-## 部署
-
-本网站使用 GitHub Actions 自动部署到 GitHub Pages。每次推送到 `main` 分支时，都会触发构建和部署流程。
-
-# 创建或更新README.md
 ## 部署说明
 
 本项目现在部署在Cloudflare Pages上。
