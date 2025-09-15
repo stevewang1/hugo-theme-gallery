@@ -1,0 +1,61 @@
+name: Deploy Hugo site to Pages
+
+on:
+  # 在推送到main分支时运行
+  push:
+    branches: ["main"]
+  # 允许手动触发工作流
+  workflow_dispatch:
+
+# 设置GITHUB_TOKEN的权限
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 只允许一个并发部署
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  # 构建工作
+  build:
+    runs-on: ubuntu-latest
+    env:
+      HUGO_VERSION: 0.123.0
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: 设置Pages
+        uses: actions/configure-pages@v4
+
+      - name: 设置Hugo
+        uses: peaceiris/actions-hugo@v2
+        with:
+          hugo-version: '0.123.0'
+          extended: true
+
+      - name: 构建
+        run: hugo --minify
+
+      - name: 上传构建结果
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./public
+
+  # 部署工作
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: 部署到GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>我的相册集 on 我的相册网站</title>
+    <link>http://localhost:1313/hugo-theme-gallery/</link>
+    <description>Recent content in 我的相册集 on 我的相册网站</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <managingEditor>user@example.com (Steve Wang)</managingEditor>
+    <webMaster>user@example.com (Steve Wang)</webMaster>
+    <copyright>© Steve Wang</copyright><atom:link href="http://localhost:1313/hugo-theme-gallery/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>风景</title>
+      <link>http://localhost:1313/hugo-theme-gallery/landscape/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><author>user@example.com (Steve Wang)</author>
+      <guid>http://localhost:1313/hugo-theme-gallery/landscape/</guid><description>收集的各种美丽风景照片，展示大自然的壮丽景色。</description></item>
+    <item>
+      <title>城市</title>
+      <link>http://localhost:1313/hugo-theme-gallery/city/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><author>user@example.com (Steve Wang)</author>
+      <guid>http://localhost:1313/hugo-theme-gallery/city/</guid><description>展示世界各地城市的建筑和街景照片。</description></item>
+    <item>
+      <title>关于</title>
+      <link>http://localhost:1313/hugo-theme-gallery/about/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><author>user@example.com (Steve Wang)</author>
+      <guid>http://localhost:1313/hugo-theme-gallery/about/</guid><description>&lt;no value&gt;</description></item>
+  </channel>
+</rss>
