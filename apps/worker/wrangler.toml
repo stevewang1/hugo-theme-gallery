@@ -1,0 +1,25 @@
+# 现有配置保持不变
+name = "gallery-api"
+main = "src/index.js"
+compatibility_date = "2024-01-30"
+workers_dev = true
+
+# 通过 routes 将 Worker 绑定到自定义子域（需要该 Zone 已接入 Cloudflare 并启用代理）
+# - pattern: 绑定的主机名与路径前缀
+# - zone_name: 所属域名（无需在仓库暴露 zone_id）
+routes = [
+  { pattern = "api.xsfl.edu.kg/*", zone_name = "xsfl.edu.kg" }
+]
+
+# R2 绑定（生产/预览均可使用同名绑定，Miniflare 本地也会模拟）
+[[r2_buckets]]
+# Worker 代码中通过 env.R2_BUCKET 访问 R2 存储
+binding = "R2_BUCKET"
+# 你的 Cloudflare R2 bucket 名称（已存在：xsfl-storage-bucket）
+bucket_name = "xsfl-storage-bucket"
+
+[vars]
+# 逗号分隔的允许跨域来源，示例："https://xsfl.edu.kg,https://www.xsfl.edu.kg"
+# 开发阶段可先用 "*"，上线前请收敛到站点实际域名列表
+CORS_ALLOW_ORIGINS = "https://xsfl.edu.kg,https://www.xsfl.edu.kg"
+# 为后端设置的环境变量可在此声明，例如：API_BASE="/api"
