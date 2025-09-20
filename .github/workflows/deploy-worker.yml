@@ -1,0 +1,102 @@
+name: Deploy Worker (apps/worker)
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'apps/worker/**'
+      - '.github/workflows/deploy-worker.yml'
+  workflow_dispatch: {}
+
+# 并发保护：同一分支上仅保留最近一次部署，避免并发互相覆盖
+concurrency:
+  group: worker-deploy-${{ github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Deploy to Cloudflare Workers
+    runs-on: ubuntu-latest
+    # 超时保护：防止个别网络或第三方服务阻塞占用队列
+    timeout-minutes: 15
+
+    # 权限最小化：仅允许读取代码内容；不使用 OIDC 时移除 id-token: write
+    permissions:
+      contents: read
+
+    steps:
+      # 1) 检出代码
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 2) 设置 Node.js，并启用 npm 缓存
+      # 注意：apps/worker 目录当前没有 package-lock.json，
+      # 为避免 actions/setup-node 因未解析的路径报错，这里使用可匹配根锁文件的通配符。
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
+
+      # 3) 安装依赖（apps/worker）
+      - name: Install dependencies (apps/worker)
+        working-directory: apps/worker
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci --no-audit --no-fund
+          else
+            npm i --omit=dev --no-audit --no-fund
+          fi
+
+      # 4) 安装 Wrangler CLI
+      - name: Install Wrangler
+        run: npm install -g wrangler@4
+
+      # 5) Wrangler 诊断与环境探测（失败不阻断）
+      - name: Wrangler Diagnostics
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        working-directory: apps/worker
+        run: |
+          wrangler --version
+          wrangler whoami || true
+
+      # 6) 部署前置校验：验证路由存在、打印 HEAD 提交摘要
+      - name: Verify routes and commit
+        working-directory: apps/worker
+        run: |
+          echo "HEAD commit:"
+          git show -s --format='%H %s' HEAD
+          echo "Check upload-batch route exists:"
+          grep -n "upload-batch" -R src/index.js || (echo "Route not found in src/index.js" && exit 1)
+          echo "List src files:"
+          ls -la src
+
+      # 7) 发布 Worker：通过临时 wrangler.ci.toml 注入 account_id，避免污染仓库
+      - name: Publish Worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        working-directory: apps/worker
+        run: |
+          # 目的：通过临时配置文件将 account_id 注入 wrangler 配置，避免 /memberships 探测导致的 10000 鉴权错误
+          # 前置校验：必须存在 CLOUDFLARE_ACCOUNT_ID
+          if [ -z "${CLOUDFLARE_ACCOUNT_ID}" ]; then
+            echo "CLOUDFLARE_ACCOUNT_ID is NOT set (GitHub Secret missing)." >&2
+            exit 1
+          fi
+          # 将账号 ID 加入掩码，避免在日志中暴露
+          echo "::add-mask::${CLOUDFLARE_ACCOUNT_ID}"
+          echo "Deploying to account id (masked tail): ****${CLOUDFLARE_ACCOUNT_ID: -6}"
+
+          # 复制仓库中的 wrangler.toml，并在副本中追加 account_id 字段（不污染仓库）
+          cp wrangler.toml wrangler.ci.toml
+          printf '\naccount_id = "%s"\n' "$CLOUDFLARE_ACCOUNT_ID" >> wrangler.ci.toml
+
+          # 使用临时配置文件进行部署（wrangler@4 不支持 --account-id CLI 参数）
+          wrangler deploy --config wrangler.ci.toml
+
+          # 清理临时文件
+          rm -f wrangler.ci.toml

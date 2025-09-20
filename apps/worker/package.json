@@ -1,0 +1,9 @@
+{
+  "name": "hugo-theme-gallery-worker",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "dependencies": {
+    "exifr": "^7.1.3"
+  }
+}
